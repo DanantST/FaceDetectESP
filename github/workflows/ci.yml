@@ -1,0 +1,48 @@
+name: FaceDetectESP CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-arduino:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Arduino CLI
+      uses: arduino/setup-arduino-cli@v1
+    
+    - name: Install ESP32 core
+      run: |
+        arduino-cli core install esp32:esp32
+    
+    - name: Build Arduino example
+      run: |
+        arduino-cli compile --fqbn esp32:esp32:esp32p4 examples/arduino/FaceDetectESPDemo.ino
+    
+  build-espidf:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.1
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build ESP-IDF example
+      run: |
+        cd examples/espidf
+        idf.py build
+    
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check environment
+      run: |
+        bash scripts/check_env.sh
